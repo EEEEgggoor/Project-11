@@ -13,6 +13,12 @@ from kivymd.uix.relativelayout import MDRelativeLayout
 from kivymd.uix.list import MDList
 from kivymd.uix.button import MDFlatButton
 from kivymd.uix.boxlayout import MDBoxLayout
+from kivy.properties import ObjectProperty
+from kivymd.uix.scrollview import MDScrollView
+
+class ContentNavigationDrawer(MDScrollView):
+    screen_manager = ObjectProperty()
+    nav_drawer = ObjectProperty()
 
 KV = '''
 <DrawerClickableItem@MDNavigationDrawerItem>
@@ -49,19 +55,39 @@ KV = '''
         on_release:
             self.icon = "eye" if self.icon == "eye-off" else "eye-off"
             text_field.password = False if text_field.password is True else True
+<ContentNavigationDrawer>
 
+    MDList:
+
+        OneLineListItem:
+            text: "Screen 1"
+            on_press:
+                root.nav_drawer.set_state("close")
+                root.screen_manager.current = "scr 1"
+
+        OneLineListItem:
+            text: "Screen 2"
+            on_press:
+                root.nav_drawer.set_state("close")
+                root.screen_manager.current = "scr 2"
 MDScreen:
-    
+    MDTopAppBar:
+        pos_hint: {"top": 1}
+        elevation: 4
+        title: "AiNote"
+        left_action_items: [["menu", lambda x: nav_drawer.set_state("open")]]
 
     MDNavigationLayout:
-        
+
 
         MDScreenManager:
+            id: screen_manager
 
             MDScreen:
-                
+                name: "scr 1"
+
                 BoxLayout:
-                
+
                     orientation: 'vertical'
                     MDTopAppBar:
                         title: "AiNote"
@@ -74,50 +100,20 @@ MDScreen:
                     MDTabs:
                         id: tabs
                         on_tab_switch: app.on_tab_switch(*args)
-                        
+            MDScreen:
+                name: "scr 2"
+
+                
+
 
         MDNavigationDrawer:
             id: nav_drawer
-            scrim_color: 0, 0, 0, 0.5
             radius: (0, 16, 16, 0)
 
-            MDNavigationDrawerMenu:
+            ContentNavigationDrawer:
+                screen_manager: screen_manager
+                nav_drawer: nav_drawer
 
-                MDNavigationDrawerHeader:
-                    title: "Header title"
-                    title_color: "#4a4939"
-                    text: "Header text"
-                    spacing: "4dp"
-                    padding: "12dp", 0, 0, "56dp"
-
-                MDNavigationDrawerLabel:
-                    text: "Меню"
-
-                DrawerClickableItem:
-                    icon: "gmail"
-                    right_text: "+99"
-                    text_right_color: "#4a4939"
-                    text: "Inbox"
-
-
-                DrawerClickableItem:
-                    icon: "send"
-                    text: "Выбор цвета"
-                    on_release: app.open_color_picker()
-
-
-                MDNavigationDrawerDivider:
-
-                MDNavigationDrawerLabel:
-                    text: "Labels"
-
-                DrawerLabelItem:
-                    icon: "information-outline"
-                    text: "Label"
-
-                DrawerLabelItem:
-                    icon: "information-outline"
-                    text: "Label"
 <Tab>
 
     MDList:
@@ -198,7 +194,7 @@ class MainApp(MDApp):
         pass
 
     def on_tab_switch(
-        self, instance_tabs, instance_tab, instance_tab_label, tab_text
+            self, instance_tabs, instance_tab, instance_tab_label, tab_text
     ):
         '''Called when switching tabs.
 
